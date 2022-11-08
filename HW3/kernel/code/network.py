@@ -41,10 +41,14 @@ class Kernel_Layer(nn.Module):
             centroids: A Numpy array of shape [self.hidden_dim, n_features].
         """
         ### YOUR CODE HERE
-        
+        from sklearn.cluster import KMeans
+        kmeans_model = KMeans(init='random', n_clusters=self.hidden_dim)
+        kmeans_model.fit(X)
+
+        centroids = kmeans_model.cluster_centers_
         ### END YOUR CODE
         return centroids
-    
+
     def forward(self, x):
         """
         Compute Gaussian kernel (radial basis function) of the input sample batch
@@ -57,12 +61,13 @@ class Kernel_Layer(nn.Module):
             A torch tensor of shape [batch_size, num_of_prototypes]
         """
         assert x.shape[1] == self.prototypes.shape[1]
+        # self.prototypes = [num_of_prototypes, n_features]. x[0] = [1,nfeatures]
+        # each prototype  - x[0]
         ### YOUR CODE HERE
         # Basically you need to follow the equation of radial basis function
         # in the section 5 of note at http://people.tamu.edu/~sji/classes/nnkernel.pdf
         
         ### END YOUR CODE
-
 
 class Kernel_LR(nn.Module):
 
