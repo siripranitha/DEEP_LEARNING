@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from sklearn.cluster import KMeans
 
 """
 This script implements a kernel logistic regression model, a radial basis function network model
@@ -41,13 +42,35 @@ class Kernel_Layer(nn.Module):
             centroids: A Numpy array of shape [self.hidden_dim, n_features].
         """
         ### YOUR CODE HERE
-        from sklearn.cluster import KMeans
+
         kmeans_model = KMeans(init='random', n_clusters=self.hidden_dim)
         kmeans_model.fit(X)
 
         centroids = kmeans_model.cluster_centers_
         ### END YOUR CODE
         return centroids
+
+    def kernel_function(self,x):
+        """
+        x: a torch tensor of shape [1,n_features]
+
+        Returns:
+        a torch tensor of shape [1,num_of_protoypes]
+        """
+
+        def _each_prototype_kernel(_row):
+            a = _row-x
+            value = np.dot(a,a)
+            #print(value)
+            return np.exp(-1*value/(2*self.sigma*self.sigma))
+
+        my_function = lambda row:_each_prototype_kernel(row)
+
+        #print(self.prototypes.shape)
+        result = np.array(list(map(my_function, self.prototypes)))
+            #np.apply(self.prototypes,1,my_function)
+        #print(result.shape)
+        return result.T
 
     def forward(self, x):
         """
@@ -56,11 +79,28 @@ class Kernel_Layer(nn.Module):
 
         Args:
             x: A torch tensor of shape [batch_size, n_features]
-        
+
         Returns:
             A torch tensor of shape [batch_size, num_of_prototypes]
         """
         assert x.shape[1] == self.prototypes.shape[1]
+
+        #my_function = lambda row: self.kernel_function(row)
+
+        #print(x.shape)
+        #print('above is the x')
+        #result = torch.Tensor(list(map(my_function, x))).float()
+        #print('------')
+        #print(result.shape)
+        _size = (x.shape[0], self.prototypes.shape[0], x.shape[1])
+        # batch size , 1, nfeatures - batch size, m, features.   1, m, 256; n, m , 256
+        x = x.unsqueeze(1).expand(_size)
+        p = self.prototypes.unsqueeze(0).expand(_size)
+        norms = (x - p).pow(2).sum(-1).pow(0.5)
+        return torch.exp(-1 * norms / (2 * (self.sigma * self.sigma)))
+
+
+        #np.apply_along_axis(self.kernel_function,1,x)
         # self.prototypes = [num_of_prototypes, n_features]. x[0] = [1,nfeatures]
         # each prototype  - x[0]
         ### YOUR CODE HERE
@@ -83,9 +123,18 @@ class Kernel_LR(nn.Module):
         """
         super(Kernel_LR, self).__init__()
         self.hidden_dim = hidden_dim
+
         ### YOUR CODE HERE
         # Use pytorch nn.Sequential object to build a network composed of a
+
         # kernel layer (Kernel_Layer object) and a linear layer (nn.Linear object)
+
+        # keeping bias false in linear layer for now.
+        _kernel_layer = Kernel_Layer(sigma=sigma)
+        linear_layer  = nn.Linear(in_features=self.hidden_dim,out_features=1,bias=False)
+        self.net = nn.Sequential(_kernel_layer,linear_layer)
+
+
 
         # Remember that kernel logistic regression model uses all training samples
         # in kernel layer, so set 'hidden_dim' argument to be None when creating
@@ -136,6 +185,13 @@ class RBF(nn.Module):
                                        in this model, hidden_dim is a user-specified hyper-parameter.
         """
         super(RBF, self).__init__()
+        self.sigma = sigma
+        self.hidden_dim = hidden_dim
+        _kernel_layer = Kernel_Layer(sigma=self.sigma,hidden_dim=self.hidden_dim)
+        linear_layer = nn.Linear(in_features=self.hidden_dim, out_features=1, bias=False)
+        self.net = nn.Sequential(_kernel_layer, linear_layer)
+
+
         ### YOUR CODE HERE
         # Use pytorch nn.Sequential object to build a network composed of a
         # kernel layer (Kernel_Layer object) and a linear layer (nn.Linear object)
@@ -185,6 +241,9 @@ class FFN(nn.Module):
         ### YOUR CODE HERE
         # Use pytorch nn.Sequential object to build a network composed of
         # two linear layers (nn.Linear object)
+        l1 = nn.Linear(in_features=input_dim, out_features=hidden_dim, bias=False)
+        l2 = nn.Linear(in_features=hidden_dim, out_features=1, bias=False)
+        self.net = nn.Sequential(l1,l2)
         
         ### END CODE HERE
 
