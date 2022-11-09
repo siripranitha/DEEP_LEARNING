@@ -57,7 +57,13 @@ class PCA():
             Xp: The reduced data matrix after PCA of shape [n_components, n_samples].
         '''
         ### YOUR CODE HERE
-        
+        batch_size = self.X.shape[1]
+
+        mean = (1 / batch_size) * self.X @ np.ones((batch_size, 1))
+        X_centered = self.X - mean @ np.ones((batch_size, 1)).T
+        u, _, _ = np.linalg.svd(X_centered)
+        Up = u[:,:self.n_components]
+        Xp = Up.T @ self.X
         ### END YOUR CODE
         return Up, Xp
 
@@ -86,6 +92,7 @@ class PCA():
         X_re: The reconstructed matrix of shape [n_features, n_samples].
         '''
         ### YOUR CODE HERE
+        X_re = self.Up @ Xp
         
         ### END YOUR CODE
         return X_re
@@ -158,13 +165,31 @@ class AE(nn.Module):
         '''
 
         # Note: here for the network with weights sharing. Basically you need to follow the
-        
+        #p = feautes,k=hidden dimension
+        wts = torch.empty(self.n_features,self.d_hidden_rep)
+        wts = nn.init.kaiming_normal_(wts)
+        self.shared_wts = nn.Parameter(wts)
+        self.w = self.shared_wts
 
         # Note: here for the network without weights sharing 
-        
+        # self.in_wts = nn.Parameter(nn.init.kaiming_normal_(torch.empty(self.n_features,self.d_hidden_rep)))
+        # self.out_wts = nn.Parameter(nn.init.kaiming_normal_(torch.empty(self.d_hidden_rep,self.n_features)))
+        # self.w = self.in_wts
 
+        self.l1 = nn.Linear(self.n_features,self.d_hidden_rep,bias=False)
+        self.l2 = nn.Linear(self.d_hidden_rep,self.n_features,bias=False)
+        self.second_mode_seq = nn.Sequential(self.l1,self.l2)
+        self.w = self.l1.weight
         # Note: here for the network with more layers and nonlinear functions  
-        
+        self.in1 = nn.Linear(self.n_features,2*self.d_hidden_rep,bias=False)
+        self.in2 = nn.Linear(self.d_hidden_rep*2,self.d_hidden_rep,bias=False)
+        self.out1 = nn.Linear(self.d_hidden_rep,2*self.d_hidden_rep,bias=False)
+        self.out2 = nn.Linear(self.d_hidden_rep*2,self.n_features,bias=False)
+        self.third_mode_seq = nn.Sequential(self.in1,nn.ReLU(),
+                                            self.in2,nn.ReLU(),
+                                            self.out1,nn.ReLU(),
+                                            self.out2,nn.Sigmoid()
+                                            )
 
         
         ### END YOUR CODE
@@ -199,14 +224,23 @@ class AE(nn.Module):
         # Note: here for the network with weights sharing. Basically you need to follow the
         # formula (WW^TX) in the note at http://people.tamu.edu/~sji/classes/PCA.pdf .
 
+        # first_layer = torch.mm(torch.transpose(self.shared_wts,0,1),X)
+        # last_layer = torch.mm(self.shared_wts,first_layer)
+        #print(X.t().shape)
 
-        # Note: here for the network without weights sharing 
+        #last_layer = self.second_mode_seq(X.t()).t()
 
 
-        # Note: here for the network with more layers and nonlinear functions  
+        # Note: here for the network without weights sharing
 
+        #first_layer = torch.mm(torch.transpose(self.in_wts, 0, 1), X)
+        #last_layer = torch.mm(torch.transpose(self.out_wts, 0, 1), first_layer)
+
+        # Note: here for the network with more layers and nonlinear functions
+        last_layer = self.third_mode_seq(X.t()).t()
 
         ### END YOUR CODE
+        return last_layer
 
     def _setup(self):
         '''
@@ -303,18 +337,21 @@ class AE(nn.Module):
             X_re: The reconstructed data matrix, which has the same shape as X, a numpy array.
         '''
         _, n_samples = X.shape
+        output = []
         with torch.no_grad():
             for i in range(n_samples):
                 ### YOUR CODE HERE
                 
                 # Note: Format input curr_X to the shape [n_features, 1]
-    
+
+                curr_X = np.expand_dims(X[:, i], axis=1)
                 ### END YOUR CODE            
                 curr_X_tensor = torch.tensor(curr_X).float()
                 curr_X_re_tensor = self._forward(curr_X_tensor)
+                output.append(curr_X_re_tensor.numpy())
                 ### YOUR CODE HERE
                 
                 # Note: To achieve final reconstructed data matrix with the shape [n_features, n_any].
-    
+        X_re =np.asarray(output).T
             ### END YOUR CODE 
         return X_re

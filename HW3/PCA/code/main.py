@@ -23,7 +23,7 @@ def test_ae(A, p):
     return final_w
 
 if __name__ == '__main__':
-    dataloc = "./data/USPS.mat"
+    dataloc = "../data/USPS.mat"
     A = load_data(dataloc)
     A = A.T
     ## Normalize A
@@ -31,8 +31,8 @@ if __name__ == '__main__':
 
     ### YOUR CODE HERE
     # Note: You are free to modify your code here for debugging and justifying your ideas for 5(f)
-    ps = [50, 100, 150]
+    ps = [64] #, 64, 128]#[50, 100, 150]
     for p in ps:
-        G = test_pca(A, p)
-        final_w = test_ae(A, p)  
+        #G = test_pca(A, p)
+        final_w = test_ae(A, p)
     ### END YOUR CODE 
