@@ -166,21 +166,18 @@ class AE(nn.Module):
 
         # Note: here for the network with weights sharing. Basically you need to follow the
         #p = feautes,k=hidden dimension
-        wts = torch.empty(self.n_features,self.d_hidden_rep)
-        wts = nn.init.kaiming_normal_(wts)
-        self.shared_wts = nn.Parameter(wts)
-        self.w = self.shared_wts
+        # wts = torch.empty(self.n_features,self.d_hidden_rep)
+        # wts = nn.init.kaiming_normal_(wts)
+        # self.shared_wts = nn.Parameter(wts)
+        # self.w = self.shared_wts
 
-        # Note: here for the network without weights sharing 
-        # self.in_wts = nn.Parameter(nn.init.kaiming_normal_(torch.empty(self.n_features,self.d_hidden_rep)))
-        # self.out_wts = nn.Parameter(nn.init.kaiming_normal_(torch.empty(self.d_hidden_rep,self.n_features)))
-        # self.w = self.in_wts
+        # Note: here for the network without weights sharing
 
-        self.l1 = nn.Linear(self.n_features,self.d_hidden_rep,bias=False)
-        self.l2 = nn.Linear(self.d_hidden_rep,self.n_features,bias=False)
-        self.second_mode_seq = nn.Sequential(self.l1,self.l2)
-        self.w = self.l1.weight
-        # Note: here for the network with more layers and nonlinear functions  
+        # self.l1 = nn.Linear(self.n_features,self.d_hidden_rep,bias=False)
+        # self.l2 = nn.Linear(self.d_hidden_rep,self.n_features,bias=False)
+        # self.second_mode_seq = nn.Sequential(self.l1,self.l2)
+        # self.w = self.l1.weight
+        # # Note: here for the network with more layers and nonlinear functions
         self.in1 = nn.Linear(self.n_features,2*self.d_hidden_rep,bias=False)
         self.in2 = nn.Linear(self.d_hidden_rep*2,self.d_hidden_rep,bias=False)
         self.out1 = nn.Linear(self.d_hidden_rep,2*self.d_hidden_rep,bias=False)
@@ -190,8 +187,9 @@ class AE(nn.Module):
                                             self.out1,nn.ReLU(),
                                             self.out2,nn.Sigmoid()
                                             )
+        self.w = self.in2.weight
 
-        
+        #
         ### END YOUR CODE
     
     def _forward(self, X):
@@ -224,17 +222,11 @@ class AE(nn.Module):
         # Note: here for the network with weights sharing. Basically you need to follow the
         # formula (WW^TX) in the note at http://people.tamu.edu/~sji/classes/PCA.pdf .
 
-        # first_layer = torch.mm(torch.transpose(self.shared_wts,0,1),X)
-        # last_layer = torch.mm(self.shared_wts,first_layer)
-        #print(X.t().shape)
-
-        #last_layer = self.second_mode_seq(X.t()).t()
-
+        #first_layer = torch.mm(torch.transpose(self.shared_wts,0,1),X)
+        #last_layer = torch.mm(self.shared_wts,first_layer)
 
         # Note: here for the network without weights sharing
-
-        #first_layer = torch.mm(torch.transpose(self.in_wts, 0, 1), X)
-        #last_layer = torch.mm(torch.transpose(self.out_wts, 0, 1), first_layer)
+        #last_layer = self.second_mode_seq(X.t()).t()
 
         # Note: here for the network with more layers and nonlinear functions
         last_layer = self.third_mode_seq(X.t()).t()
@@ -300,7 +292,7 @@ class AE(nn.Module):
                     qbar.set_description(
                         'Epoch {:d} Loss {:.6f}'.format(
                             epoch, loss.detach().item()))
- 
+
             # To start validation at the end of each epoch.
             loss = 0
             print('Doing validation...', end=' ')

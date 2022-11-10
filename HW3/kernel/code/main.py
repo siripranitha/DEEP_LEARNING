@@ -13,37 +13,40 @@ def main():
     # ------------Kernel Logistic Regression Case------------
     ### YOUR CODE HERE
     # Run your kernel logistic regression model here
-    learning_rate = 0.01
-    max_epoch = 10
-    batch_size = 100
-    sigma = 5
-    
+    # learning_rate = 0.01
+    # max_epoch = 10
+    # batch_size = 100
+    # sigma = 5
+    #
     #model = Model('Kernel_LR', train_X.shape[0], sigma)
     #model.train(train_X, train_y, valid_X, valid_y, max_epoch, learning_rate, batch_size)
-
+    # t1 = time()
     # model = Model('Kernel_LR', train_valid_X.shape[0], sigma)
     # model.train(train_valid_X, train_valid_y, None, None, max_epoch, learning_rate, batch_size)
     # score = model.score(test_X, test_y)
     # print("score = {} in test set.\n".format(score))
-    ### END YOUR CODE
+    # print(f'time taken = {time()-t1}')
+    # ## END YOUR CODE
 
     # ------------RBF Network Case------------
     ### YOUR CODE HERE
     # Run your radial basis function network model here
-    hidden_dim = 12
-    learning_rate = 0.01
-    max_epoch = 10
-    batch_size = 100
-    sigma = 5
+    # hidden_dim = 12
+    # learning_rate = 0.01
+    # max_epoch = 10
+    # batch_size = 100
+    # sigma = 5
+    # #t1 = time()
 
-    #model = Model('RBF', hidden_dim, sigma)
-    #model.train(train_X, train_y, valid_X, valid_y, max_epoch, learning_rate, batch_size)
-
+    # model = Model('RBF', hidden_dim, sigma)
+    # model.train(train_X, train_y, valid_X, valid_y, max_epoch, learning_rate, batch_size)
+    #
     # model = Model('RBF', hidden_dim, sigma)
     # model.train(train_valid_X, train_valid_y, None, None, max_epoch, learning_rate, batch_size)
     # score = model.score(test_X, test_y)
     # print("score = {} in test set.\n".format(score))
-    ### END YOUR CODE
+    # print(f'time taken = {time() - t1}')
+    # ## END YOUR CODE
 
     # ------------Feed-Forward Network Case------------
     ### YOUR CODE HERE
@@ -52,14 +55,15 @@ def main():
     learning_rate = 0.01
     max_epoch = 10
     batch_size = 100
-
-    model = Model('FFN', hidden_dim)
-    model.train(train_X, train_y, valid_X, valid_y, max_epoch, learning_rate, batch_size)
-
+    t1 = time()
+    # model = Model('FFN', hidden_dim)
+    # model.train(train_X, train_y, valid_X, valid_y, max_epoch, learning_rate, batch_size)
+    #
     model = Model('FFN', hidden_dim)
     model.train(train_valid_X, train_valid_y, None, None, max_epoch, learning_rate, batch_size)
     score = model.score(test_X, test_y)
     print("score = {} in test set\n".format(score))
+    print(f'time taken = {time() - t1}')
     ### END YOUR CODE
     
 if __name__ == '__main__':
