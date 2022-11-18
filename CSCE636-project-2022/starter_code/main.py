@@ -20,7 +20,8 @@ if __name__ == '__main__':
 	os.environ["CUDA_VISIBLE_DEVICES"]='-1'
 	model_and_run_configs = configure()
 	model = MyModel(model_and_run_configs)
-	print(model)
+	print(model.network)
+	print('----------------')
 
 	if model_and_run_configs.mode == 'train':
 		x_train, y_train, x_test, y_test = load_data(model_and_run_configs.data_dir)

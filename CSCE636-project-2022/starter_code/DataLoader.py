@@ -31,13 +31,13 @@ def load_data(data_dir):
             data = pickle.load(fo, encoding='bytes')
             y_train.extend(data[b'labels'])
             if i != 1:
-                x_train = np.vstack((x_train, data[b'data'].astype(np.float32)))
+                x_train = np.vstack((x_train, data[b'data'].astype(np.uint8)))
             else:
-                x_train = data[b'data'].astype(np.float32)
+                x_train = data[b'data'].astype(np.uint8)
     y_train = np.array(y_train)
     with open(os.path.join(data_dir, 'test_batch'), 'rb') as fo:
         data = pickle.load(fo, encoding='bytes')
-        x_test = data[b'data'].astype(np.float32)
+        x_test = data[b'data'].astype(np.int64)
         y_test = np.array(data[b'labels'])
 
     ### END CODE HERE

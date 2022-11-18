@@ -5,11 +5,12 @@
 
 
 import argparse
+import os
 
 
 def configure():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--resnet_size", type=int, default=18,
+	parser.add_argument("--resnet_size", type=int, default=3,
 						help='n: the size of ResNet-(6n+2) v1 or ResNet-(9n+2) v2')
 	parser.add_argument("--batch_size", type=int, default=128, help='training batch size')
 	parser.add_argument("--num_classes", type=int, default=10, help='number of classes')
@@ -21,13 +22,15 @@ def configure():
 	parser.add_argument("--learning_rate",type=float,default=0.01,help='learning rate')
 	parser.add_argument("--momentum", type=float, default=0.9, help='momentum')
 	parser.add_argument("--width", type=int, default=1, help="width of the resnet")
-	parser.add_argument("--max_epoch",type=int,default=100,help="epoch count")
+	parser.add_argument("--max_epoch",type=int,default=50,help="epoch count")
 
-
+	DATA_DIR = "../../ResNet/cifar-10-batches-py"
+	#print(os.listdir("../../"))
+	SAVE_DIR = "../save"
 	#parser.add_argument("--modeldir", type=str, default='model_v1', help='model directory')
-	parser.add_argument("--mode", help="train, test or predict")
-	parser.add_argument("--data_dir", help="path to the data")
-	parser.add_argument("--save_dir", help="path to save the results")
+	parser.add_argument("--mode",default='train', help="train, test or predict")
+	parser.add_argument("--data_dir", default=DATA_DIR,help="path to the data")
+	parser.add_argument("--save_dir", default=SAVE_DIR,help="path to save the results")
 
 	return parser.parse_args()
 

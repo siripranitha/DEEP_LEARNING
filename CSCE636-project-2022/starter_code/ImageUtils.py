@@ -57,7 +57,8 @@ def preprocess_image(image, training):
         ])
 
     #todo: recheck this
-
+    #print(type(image),image.shape)
+    #print(image)
     image = Image.fromarray(image)
     image = current_transform(image)
 

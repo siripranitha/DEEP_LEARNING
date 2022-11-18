@@ -4,11 +4,11 @@
 import os
 from time import time
 import numpy as np
-from Network import MyNetwork
+from Network import ResNet
 from ImageUtils import parse_record
 
 import torch
-import tqdm
+from tqdm import tqdm
 
 
 """This script defines the training, validation and testing process.
@@ -18,7 +18,11 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = MyNetwork(configs)
+        self.network = ResNet(resnet_size=configs.resnet_size,
+                 num_classes=10,
+                 first_num_filters=16,
+                 width=configs.width)
+        self.model_setup()
 
     def model_setup(self):
         # todo: setting up the checkpoint model occurs here. model setup
@@ -32,6 +36,9 @@ class MyModel(object):
                                          )
         # learning rate scheduler. TODO: TRY OUT DIFFERNT TYPES
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer,T_max=200)
+        if torch.cuda.is_available():
+            self.network = self.network.cuda()
+            self.loss = self.loss.cuda()
 
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
         # todo: using the validation.
@@ -41,6 +48,7 @@ class MyModel(object):
         num_batches = num_samples // self.configs.batch_size
 
         print('### Training... ###')
+        current_loss=None
         for _epoch in range(self.configs.max_epoch):
             st = time()
             shuffle_index = np.random.permutation(num_samples)
@@ -50,15 +58,22 @@ class MyModel(object):
 
 
                 current_input_x = curr_x_train[i * self.configs.batch_size:(i + 1) * self.configs.batch_size]
-                current_input_x = np.apply_along_axis(lambda x: parse_record(x, True), 1, current_input_x)
+                current_input_x = [parse_record(x, True) for x in current_input_x]
                 current_input_x = torch.stack(current_input_x).float()#.cuda()
 
-                current_input_y = curr_y_train[i * self.configs.batch_size:(i + 1) * self.configs.batch_size]
+                current_input_y = torch.tensor(curr_y_train[i * self.configs.batch_size:(i + 1) * self.configs.batch_size]).float()
+
+
+                if torch.cuda.is_available():
+                    current_input_x = current_input_x.cuda()
+                    current_input_y = current_input_y.cuda()
+
+
 
                 self.optimizer.zero_grad()
                 output = self.network(current_input_x)#.to('cuda')) #todo: network, cuda conversion, torch stack
 
-                current_loss = self.loss(output, torch.tensor(current_input_y).long())#.to('cuda'))
+                current_loss = self.loss(output, current_input_y.long())
                 current_loss.backward()
                 self.optimizer.step()
 
@@ -83,7 +98,23 @@ class MyModel(object):
         print(f'produced model params from {path}')
 
     def evaluate(self, x, y):
-        pass
+        # evaluating on the loaded network. network to be loaded in model setup in case not loaded
+        self.network.eval()
+        cuda_available = torch.cuda.is_available()
+
+        preds = []
+        for i in tqdm(range(x.shape[0])):
+            curr_x = parse_record(x[i], False).float()
+            if cuda_available:
+                curr_x = curr_x.cuda()
+            curr_x_tensor = curr_x.view(1, 3, 32, 32)
+            preds.append(int(torch.max(self.network(curr_x_tensor), 1)[1]))
+
+        y = torch.tensor(y)
+        preds = torch.tensor(preds)
+        accuracy = torch.sum(preds == y) / y.shape[0]
+        print('Test accuracy: {:.4f}'.format(accuracy))
+
 
     def predict_prob(self, x):
         pass
