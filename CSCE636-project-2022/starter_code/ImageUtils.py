@@ -1,6 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+from torchvision import transforms
+from PIL import Image
+# todo: study
 
 """This script implements the functions for data augmentation
 and preprocessing.
@@ -16,11 +18,18 @@ def parse_record(record, training):
     Returns:
         image: An array of shape [3, 32, 32].
     """
-    ### YOUR CODE HERE
+    # Reshape from [depth * height * width] to [depth, height, width].
+    depth_major = record.reshape((3, 32, 32))
 
-    ### END CODE HERE
+    # Convert from [depth, height, width] to [height, width, depth]
+    image = np.transpose(depth_major, [1, 2, 0])
 
-    image = preprocess_image(image, training) # If any.
+    image = preprocess_image(image, training)
+
+    # Convert from [height, width, depth] to [depth, height, width]
+    #image = np.transpose(image, [2, 0, 1])
+
+    #todo; taking hw2 preprocessing. can use new techniques here.
 
     return image
 
@@ -35,9 +44,22 @@ def preprocess_image(image, training):
     Returns:
         image: An array of shape [3, 32, 32]. The processed image.
     """
-    ### YOUR CODE HERE
+    current_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(np.array([125.3, 123.0, 113.9]) / 255, np.array([63.0, 62.1, 66.7]) / 255)
+    ])
+    if training:
+        current_transform = transforms.Compose([
+        transforms.Pad(4,padding_mode='reflect'),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomCrop(32),
+        current_transform
+        ])
 
-    ### END CODE HERE
+    #todo: recheck this
+
+    image = Image.fromarray(image)
+    image = current_transform(image)
 
     return image
 

@@ -24,13 +24,28 @@ def load_data(data_dir):
     """
 
     ### YOUR CODE HERE
+    y_train = []
+    x_train = None
+    for i in range(1, 6):
+        with open(os.path.join(data_dir, f'data_batch_{i}'), 'rb') as fo:
+            data = pickle.load(fo, encoding='bytes')
+            y_train.extend(data[b'labels'])
+            if i != 1:
+                x_train = np.vstack((x_train, data[b'data'].astype(np.float32)))
+            else:
+                x_train = data[b'data'].astype(np.float32)
+    y_train = np.array(y_train)
+    with open(os.path.join(data_dir, 'test_batch'), 'rb') as fo:
+        data = pickle.load(fo, encoding='bytes')
+        x_test = data[b'data'].astype(np.float32)
+        y_test = np.array(data[b'labels'])
 
     ### END CODE HERE
 
     return x_train, y_train, x_test, y_test
 
 
-def load_testing_images(data_dir):
+def load_testing_images(data_dir): # TODO: CHANGE AND PREPROCESS IT ACCORDING TO GIVEN TEST IMAGE.
     """Load the images in private testing dataset.
 
     Args:
@@ -43,6 +58,8 @@ def load_testing_images(data_dir):
     """
 
     ### YOUR CODE HERE
+    # assuming this is the prediction.npy
+    x_test = np.load(data_dir)
 
     ### END CODE HERE
 
@@ -66,6 +83,12 @@ def train_valid_split(x_train, y_train, train_ratio=0.8):
     """
     
     ### YOUR CODE HERE
+    n,_ = x_train.shape
+    split_index = int(train_ratio*n)
+    x_train_new = x_train[:split_index]
+    y_train_new = y_train[:split_index]
+    x_valid = x_train[split_index:]
+    y_valid = y_train[split_index:]
 
     ### END CODE HERE
 
