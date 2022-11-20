@@ -22,7 +22,7 @@ def configure():
 	parser.add_argument("--learning_rate",type=float,default=0.01,help='learning rate')
 	parser.add_argument("--momentum", type=float, default=0.9, help='momentum')
 	parser.add_argument("--width", type=int, default=1, help="width of the resnet")
-	parser.add_argument("--max_epoch",type=int,default=50,help="epoch count")
+	parser.add_argument("--max_epoch",type=int,default=200,help="epoch count")
 
 	DATA_DIR = "../../ResNet/cifar-10-batches-py"
 	#print(os.listdir("../../"))

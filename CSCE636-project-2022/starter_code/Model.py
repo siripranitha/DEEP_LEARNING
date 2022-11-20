@@ -4,7 +4,7 @@
 import os
 from time import time
 import numpy as np
-from Network import ResNet
+from Network import MyNetwork
 from ImageUtils import parse_record
 
 import torch
@@ -18,9 +18,8 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = ResNet(resnet_size=configs.resnet_size,
+        self.network = MyNetwork(resnet_size=configs.resnet_size,
                  num_classes=10,
-                 first_num_filters=16,
                  width=configs.width)
         self.model_setup()
 
