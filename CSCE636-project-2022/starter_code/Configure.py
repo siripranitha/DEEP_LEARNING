@@ -31,8 +31,6 @@ def configure():
 	parser.add_argument("--mode",default='train', help="train, test or predict")
 	parser.add_argument("--data_dir", default=DATA_DIR,help="path to the data")
 	parser.add_argument("--save_dir", default=SAVE_DIR,help="path to save the results")
-	RESULT_PATH = None
-	parser.add_argument("--result_path",default=RESULT_PATH)
 	MODEL_PATH = None
 	parser.add_argument("--final_model_path",default=MODEL_PATH)
 	return parser.parse_args()

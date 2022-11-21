@@ -45,7 +45,8 @@ def load_data(data_dir):
     return x_train, y_train, x_test, y_test
 
 
-def load_testing_images(data_dir): # TODO: CHANGE AND PREPROCESS IT ACCORDING TO GIVEN TEST IMAGE.
+
+def load_testing_images_private_data(data_path): # TODO: CHANGE AND PREPROCESS IT ACCORDING TO GIVEN TEST IMAGE.
     """Load the images in private testing dataset.
 
     Args:
@@ -59,8 +60,7 @@ def load_testing_images(data_dir): # TODO: CHANGE AND PREPROCESS IT ACCORDING TO
 
     ### YOUR CODE HERE
     # assuming this is the prediction.npy
-    x_test = np.load(data_dir)
-
+    x_test = np.load(data_path)
     ### END CODE HERE
 
     return x_test
