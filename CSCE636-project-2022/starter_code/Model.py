@@ -62,15 +62,17 @@ class MyModel(object):
                 current_input_x = [parse_record(x, True) for x in current_input_x]
                 current_input_x = torch.stack(current_input_x).float()#.cuda()
                 current_input_y = torch.tensor(curr_y_train[i * self.configs.batch_size:(i + 1) * self.configs.batch_size]).float()
+
                 if torch.cuda.is_available():
                     current_input_x = current_input_x.cuda()
                     current_input_y = current_input_y.cuda()
                 self.optimizer.zero_grad()
                 output = self.network(current_input_x)#.to('cuda')) #todo: network, cuda conversion, torch stack
-
+                #print(output.shape,current_input_y.long().shape)
                 current_loss = self.loss(output, current_input_y.long())
                 current_loss.backward()
                 self.optimizer.step()
+                #self.evaluate(x_valid, y_valid, print_accuracy=False)
 
                 print('Batch {:d}/{:d} Loss {:.6f}'.format(i, num_batches, current_loss), end='\r', flush=False)
 
@@ -101,17 +103,41 @@ class MyModel(object):
         self.network.load_state_dict(checkpoint,strict=True) #todo:
         print(f'produced model params from {path}')
 
+    def accuracy(self, logits, labels):
+        pred, predClassId = torch.max(logits, dim=1)
+        return torch.tensor(torch.sum(predClassId == labels).item() / len(logits) * 100)
+
     def evaluate(self, x, y,model_path=None,print_accuracy=True):
         # if model path is not specified, it takes the model currently loaded
         # else it loads the model from the model path
-        preds,_ = self.predict_prob(x,model_path)
-        y = torch.tensor(y)
-        preds = torch.tensor(preds)
-        accuracy = torch.sum(preds == y) / y.shape[0]
-        loss = self.loss(preds, y.long())
+
+        if model_path:
+            self.network.load_ckpt(model_path)
+
+        self.network.eval()
+        batch_losses, batch_accs = [], []
+        for images, labels in zip(x,y):
+            with torch.no_grad():
+                images = parse_record(images, False)
+                logits = self.network(images)
+            batch_losses.append(self.loss(logits, labels))
+            batch_accs.append(self.accuracy(logits, labels))
+        avg_loss = torch.stack(batch_losses).mean().item()
+        avg_acc = torch.stack(batch_accs).mean().item()
+
         if print_accuracy:
-            print('Test accuracy: {:.4f}'.format(accuracy))
-        return accuracy,loss
+            print("avg_loss, ", avg_loss)
+        print("avg_acc, ", avg_acc)
+        return avg_acc,avg_loss
+        #
+        # preds,probabilities = self.predict_prob(x,model_path)
+        # y = torch.tensor(y)
+        # preds = torch.tensor(preds)
+        # accuracy = torch.sum(preds == y) / y.shape[0]
+        # loss = self.loss(torch.Tensor(probabilities), y.long())
+        # if print_accuracy:
+        #     print('Test accuracy: {:.4f}'.format(accuracy))
+        # return accuracy,loss
 
 
     def predict_prob(self, x,model_path=None):
