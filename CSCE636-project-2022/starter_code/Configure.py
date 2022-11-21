@@ -21,7 +21,7 @@ def configure():
 	parser.add_argument("--weight_decay", type=float, default=2e-4, help='weight decay rate')
 	parser.add_argument("--learning_rate",type=float,default=0.01,help='learning rate')
 	parser.add_argument("--momentum", type=float, default=0.9, help='momentum')
-	parser.add_argument("--width", type=int, default=1, help="width of the resnet")
+	parser.add_argument("--width", type=int, default=3, help="width of the resnet")
 	parser.add_argument("--max_epoch",type=int,default=200,help="epoch count")
 
 	DATA_DIR = "../../ResNet/cifar-10-batches-py"
@@ -31,7 +31,10 @@ def configure():
 	parser.add_argument("--mode",default='train', help="train, test or predict")
 	parser.add_argument("--data_dir", default=DATA_DIR,help="path to the data")
 	parser.add_argument("--save_dir", default=SAVE_DIR,help="path to save the results")
-
+	RESULT_PATH = None
+	parser.add_argument("--result_path",default=RESULT_PATH)
+	MODEL_PATH = None
+	parser.add_argument("--final_model_path",default=MODEL_PATH)
 	return parser.parse_args()
 
 

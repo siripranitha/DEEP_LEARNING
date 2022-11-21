@@ -33,16 +33,18 @@ if __name__ == '__main__':
 	elif model_and_run_configs.mode == 'test':
 		# Testing on public testing dataset
 		_, _, x_test, y_test = load_data(model_configs.data_dir)
-		model.evaluate(x_test, y_test)
+		model.evaluate(x_test, y_test,model_and_run_configs.final_model_path)
 
 	elif model_configs.mode == 'predict':
 		# Loading private testing dataset
 		x_test = load_testing_images(model_and_run_configs.data_dir)
 		# visualizing the first testing image to check your image shape
 		visualize(x_test[0], 'test.png')
-		# Predicting and storing results on private testing dataset 
-		predictions = model.predict_prob(x_test)
-		np.save(model_and_run_configs.result_dir, predictions)
+		# Predicting and storing results on private testing dataset
+
+
+		predictions = model.predict_prob(x_test,model_and_run_configs.final_model_path)
+		np.save(model_and_run_configs.result_path, predictions)
 		
 
 ### END CODE HERE

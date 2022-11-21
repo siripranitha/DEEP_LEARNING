@@ -24,7 +24,7 @@ class MyModel(object):
         self.model_setup()
 
     def model_setup(self):
-        # todo: setting up the checkpoint model occurs here. model setup
+
         self.loss = torch.nn.CrossEntropyLoss()
         self.learning_rate = self.configs.learning_rate
         #TODO: INCLUDE SGD IN REPORT!
@@ -96,8 +96,21 @@ class MyModel(object):
         self.network.load_state_dict(checkpoint,strict=True) #todo:
         print(f'produced model params from {path}')
 
-    def evaluate(self, x, y):
-        # evaluating on the loaded network. network to be loaded in model setup in case not loaded
+    def evaluate(self, x, y,model_path=None):
+        # if model path is not specified, it takes the model currently loaded
+        # else it loads the model from the model path
+        preds = self.predict_prob(x,model_path)
+        y = torch.tensor(y)
+        preds = torch.tensor(preds)
+        accuracy = torch.sum(preds == y) / y.shape[0]
+        print('Test accuracy: {:.4f}'.format(accuracy))
+
+
+    def predict_prob(self, x,model_path=None):
+        # make sure configs have the model path, final_model path
+        # also the results_directory
+        if model_path:
+            self.network.load_ckpt(model_path)
         self.network.eval()
         cuda_available = torch.cuda.is_available()
 
@@ -109,14 +122,4 @@ class MyModel(object):
             curr_x_tensor = curr_x.view(1, 3, 32, 32)
             preds.append(int(torch.max(self.network(curr_x_tensor), 1)[1]))
 
-        y = torch.tensor(y)
-        preds = torch.tensor(preds)
-        accuracy = torch.sum(preds == y) / y.shape[0]
-        print('Test accuracy: {:.4f}'.format(accuracy))
-
-
-    def predict_prob(self, x):
-        pass
-
-
-### END CODE HERE
+        return preds

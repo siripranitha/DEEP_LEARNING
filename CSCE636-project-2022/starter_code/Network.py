@@ -66,7 +66,7 @@ class group_layer(nn.Module):
     def __init__(self, in_filters,out_filters, stride, resnet_size) -> None:
 
         super().__init__()
-        blocks = []
+        blocks = nn.ModuleList()
         for i in range(resnet_size):
             if i==0:
 
@@ -93,7 +93,7 @@ class StdBlock(nn.Module):
         super().__init__()
         self.initial_layer = bn_relu_layer(in_filters)
 
-        layers = []
+        layers = nn.ModuleList()
 
         self.stride = stride
 
