@@ -20,7 +20,8 @@ class MyNetwork(nn.Module):
     def __init__(self, resnet_size,
                  num_classes,
                  width):
-        super().__init__()
+        #super().__init__()
+        super(MyNetwork, self).__init__()
 
 
         self.resnet_size = resnet_size

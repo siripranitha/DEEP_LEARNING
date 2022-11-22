@@ -1,5 +1,5 @@
 import numpy as np
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from torchvision import transforms
 from PIL import Image
 # todo: study
@@ -75,11 +75,11 @@ def visualize(image, save_name='test.png'):
     Returns:
         image: An array of shape [32, 32, 3].
     """
-    ### YOUR CODE HERE
-    
-    ### YOUR CODE HERE
-    
+    image = image.reshape((3, 32, 32))
+    image = np.transpose(image, [1, 2, 0])
+
     plt.imshow(image)
+
     plt.savefig(save_name)
     return image
 
