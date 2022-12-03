@@ -12,7 +12,9 @@ from utils import weights_init
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-
+USE_CUDA = False
+if torch.cuda.is_available():
+  USE_CUDA=True
 
 class Config(object):
   """Holds model hyperparams and data information.
@@ -31,7 +33,6 @@ class Config(object):
   dropout = 0.1
   lr = 0.01
   vocab_size= 0
-  use_cuda = False
   ### END YOUR CODE
 
 class RNNLM_Model(nn.Module):
@@ -40,7 +41,6 @@ class RNNLM_Model(nn.Module):
     """Initialize the model."""
     super(RNNLM_Model, self).__init__()
     self.config = config
-    self.cuda = config.use_cuda
 
     ### YOUR CODE HERE
     ### Define the Embedding layer. Hint: check nn.Embedding
@@ -174,7 +174,7 @@ class RNNLM_Model(nn.Module):
     """
     ### YOUR CODE HERE
     init_state = torch.zeros(self.config.batch_size,self.config.hidden_size)
-    if self.cuda:
+    if USE_CUDA:
       init_state = init_state.cuda()
     ### END YOUR CODE
     return init_state
@@ -208,8 +208,9 @@ def generate_text(model, config, vocab,  starting_text='<eos>',
   for i in range(stop_length):
     input_token = tokens[-1]
     input_token = torch.unsqueeze(torch.unsqueeze(torch.tensor(input_token).type(torch.LongTensor), 0), 0)
-    ## if you are using cpu, do not attach input_token to cuda. 
-    input_token = input_token.cuda()
+    ## if you are using cpu, do not attach input_token to cuda.
+    if USE_CUDA:
+      input_token = input_token.cuda()
     outputs, state = model(input_token, state)
     ## Here we cast outputs to float64 as there are numerical issues at hand
     # (i.e. sum(output of softmax) = 1.00000298179 and not 1)
@@ -294,7 +295,7 @@ def run_epoch(our_model, config, model_optimizer, criterion, data, mode='train',
       x = torch.from_numpy(x).type(torch.LongTensor)
       y = torch.from_numpy(y).type(torch.LongTensor)
       ## if you are using cpu, do not attach x,y to cuda.
-      if our_model.cuda:
+      if USE_CUDA:
         x = x.cuda()
         y = y.cuda()
       outputs, state = our_model(x, state)
@@ -320,7 +321,7 @@ def test_RNNLM():
   config.vocab_size= len(vocab)
   ### Initialize the model. If you are using cpu, do not attach model to cuda.  
   our_model = RNNLM_Model(config)
-  if torch.cuda.is_available():
+  if USE_CUDA:
     our_model.cuda()
 
   ### define the loss (criterion), optimizer
@@ -362,7 +363,7 @@ def test_RNNLM():
   gen_config = deepcopy(config)
   gen_config.batch_size = gen_config.num_steps = 1   
   gen_model = RNNLM_Model(gen_config)
-  if gen_config.use_cuda:
+  if USE_CUDA:
     gen_model.cuda()
   gen_model.load_state_dict(checkpoint['net'])
   starting_text = 'in palo alto'
@@ -372,6 +373,6 @@ def test_RNNLM():
     starting_text = input('> ')
 
 if __name__ == "__main__":
-  #os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+  os.environ['CUDA_VISIBLE_DEVICES'] = '0'
   test_RNNLM()
 
