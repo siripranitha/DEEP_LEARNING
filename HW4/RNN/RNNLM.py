@@ -24,9 +24,9 @@ class Config(object):
   instantiation.
   """
   ### YOUR CODE HERE
-  batch_size = 64
-  embed_size = 50
-  hidden_size = 100
+  batch_size = 128
+  embed_size = 1024
+  hidden_size = 1024
   num_steps = 10 # RNN is unfolded into 'num_steps' time steps for training
   max_epochs = 1 # the number of max epoch
   early_stopping = 2
@@ -55,7 +55,7 @@ class RNNLM_Model(nn.Module):
     ### Define the projection layer, U, b2 in HW4
 
 
-    self.softmax_layer = nn.Softmax(dim=0)
+    self.softmax_layer = nn.Softmax(dim=1)
     self.U = nn.Parameter(torch.randn(config.hidden_size,config.vocab_size))
     self.b2 = nn.Parameter(torch.randn(1,config.vocab_size))
 
@@ -137,6 +137,7 @@ class RNNLM_Model(nn.Module):
     for _step in range(self.config.num_steps):
       final_state = torch.matmul(final_state, self.H) + torch.matmul(input_x[_step], self.I) + self.b1
       final_state = torch.sigmoid(final_state)
+      final_state = self.output_drop(final_state)
       rnn_outputs.append(final_state)
 
     ### END YOUR CODE
@@ -161,7 +162,7 @@ class RNNLM_Model(nn.Module):
 
     for _each_rnn_output in rnn_outputs:
       _current = torch.matmul(_each_rnn_output,self.U)+self.b2
-      _current =self.softmax_layer(_current)
+      #_current =self.softmax_layer(_current)
       outputs.append(_current)
     ### END YOUR CODE
     return outputs
@@ -329,7 +330,7 @@ def test_RNNLM():
 
   ### YOUR CODE HERE
   criterion = nn.CrossEntropyLoss()
-  model_optimizer = torch.optim.SGD(params=our_model.parameters(),lr=config.lr,momentum=0.9)#, weight_decay=2e-5)
+  model_optimizer = torch.optim.SGD(params=our_model.parameters(),lr=config.lr,momentum=0.0001, weight_decay=0.000001)
   ### END YOUR CODE
 
   best_val_pp = float('inf')
