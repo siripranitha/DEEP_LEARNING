@@ -28,8 +28,8 @@ class Config(object):
   embed_size = 1024
   hidden_size = 1024
   num_steps = 10 # RNN is unfolded into 'num_steps' time steps for training
-  max_epochs = 1 # the number of max epoch
-  early_stopping = 2
+  max_epochs = 300 # the number of max epoch
+  early_stopping = 3
   dropout = 0.1
   lr = 0.01
   vocab_size= 0
